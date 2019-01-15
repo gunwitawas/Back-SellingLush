@@ -241,7 +241,31 @@ app.get("/searchProduct",(req,res)=>{
 
 app.post("/Product",(req,res)=>{
 
-})
+});
+
+app.post("/updateProduct", function (req, res) {
+    console.log("reqqqqqq", req.body);
+    
+    let sql = "UPDATE product SET p_name = ':p_name', p_size = ':p_size', price = ':price', mixer = ':mixer',p_img = FROM_BASE64(':p_img') WHERE product.p_id = ':p_id'";
+    sql = sql.replace(':p_id', req.body.p_id)
+        .replace(':p_name', req.body.p_name)
+        .replace(':p_size', req.body.p_size)
+        .replace(':price', req.body.price)
+        .replace(':mixer', req.body.mixer)
+        .replace(':p_img', req.body.p_img.replace(/^data:image\/[a-z]+;base64,/, ""));
+    try {
+        con.query(sql, function (err, result) {
+            if (err) {
+                res.send(err);
+                return err;
+            }
+            res.send(result);
+        });
+    } catch (e) {
+        res.send({error: e})
+    }
+});
+
 
 app.listen(3000, () => {
     console.log('Start server at port 3000.')
