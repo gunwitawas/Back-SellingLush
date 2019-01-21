@@ -17,9 +17,11 @@ con.connect(function (err) {
     }
     console.log("Connected!");
 });
-app.use(bodyParser({limit: '50mb'}));
-app.use(bodyParser.json());       // to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({     // to support URL-encoded bodies
+app.use(bodyParser({
+    limit: '50mb'
+}));
+app.use(bodyParser.json()); // to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({ // to support URL-encoded bodies
     extended: true
 }));
 /*
@@ -66,8 +68,7 @@ app.all('*', function (req, res, next) {
 
     if ('OPTIONS' == req.method) {
         res.send(200);
-    }
-    else {
+    } else {
         next();
     }
 });
@@ -99,11 +100,16 @@ app.get("/login", function (req, res) {
                 console.log(obj);
                 res.send(obj);
             } else {
-                res.send({result: false, message: "not found"});
+                res.send({
+                    result: false,
+                    message: "not found"
+                });
             }
         });
     } catch (e) {
-        res.send({error: e})
+        res.send({
+            error: e
+        })
     }
 });
 
@@ -121,25 +127,35 @@ app.get("/checkValidUsername", function (req, res) {
                 console.log(result);
                 let check = (name == result[0].username);
 
-                res.send({result: false, message: "Duplicate username"});
+                res.send({
+                    result: false,
+                    message: "Duplicate username"
+                });
             } else {
-                res.send({result: true, message: "You can use this name"});
+                res.send({
+                    result: true,
+                    message: "You can use this name"
+                });
             }
         });
     } catch (e) {
-        res.send({error: e})
+        res.send({
+            error: e
+        })
     }
 });
 
 app.post("/regis", function (req, res) {
+    console.log(req);
+
     let sql = "insert into account values(':username',':password',':name',':address',':tel',':line_id',':type',':email',FROM_BASE64(':image'))";
-    sql = sql.replace(':username', req.body.username)
-        .replace(':password', req.body.password)
-        .replace(':address', req.body.address)
-        .replace(':tel', req.body.tel)
-        .replace(':line_id', req.body.line_id)
-        .replace(':email', req.body.email)
-        .replace(':image',req.body.image);
+    sql = sql.replace(':username', req.body.usernameRegis)
+        .replace(':password', req.body.passwordRegis)
+        .replace(':address', req.body.inputAddress)
+        .replace(':tel', req.body.inputTel)
+        .replace(':line_id', req.body.inputLine)
+        .replace(':email', req.body.inputEmail)
+        .replace(':image', req.body.image);
     try {
         con.query(sql, function (err, result) {
             if (err) {
@@ -149,7 +165,9 @@ app.post("/regis", function (req, res) {
             res.send(result);
         });
     } catch (e) {
-        res.send({error: e})
+        res.send({
+            error: e
+        })
     }
 });
 
@@ -171,7 +189,9 @@ app.post("/insertProduct", function (req, res) {
             res.send(result);
         });
     } catch (e) {
-        res.send({error: e})
+        res.send({
+            error: e
+        })
     }
 });
 app.get("/getAllProduct", function (req, res) {
@@ -185,43 +205,54 @@ app.get("/getAllProduct", function (req, res) {
                 return err;
             }
             if (result.length > 0) {
-                res.send({result: true, content: result.map(m=>{let v=m; v.isEdit=false; return v;})});
+                res.send({
+                    result: true,
+                    content: result.map(m => {
+                        let v = m;
+                        v.isEdit = false;
+                        return v;
+                    })
+                });
             } else {
-                res.send({result: false, message: "not found"});
+                res.send({
+                    result: false,
+                    message: "not found"
+                });
             }
         });
     } catch (e) {
-        res.send({result:false,error: e})
+        res.send({
+            result: false,
+            error: e
+        })
     }
 
 });
 
-app.get("/searchProduct",(req,res)=>{
+app.get("/searchProduct", (req, res) => {
     try {
         console.log(req.query);
         let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img from product where 1=1";
-        if(req.query.p_id){
+        if (req.query.p_id) {
             console.log(req.query.p_id);
-           str = str.concat(" AND p_id like '%"+req.query.p_id+"%'");
+            str = str.concat(" AND p_id like '%" + req.query.p_id + "%'");
         }
-        if(req.query.p_name){
+        if (req.query.p_name) {
             console.log(req.query.p_name);
-            str = str.concat(" AND p_name like '%"+req.query.p_name+"%'");
+            str = str.concat(" AND p_name like '%" + req.query.p_name + "%'");
         }
-        if(req.query.p_size){
-            str =  str.concat(" AND p_size = '"+req.query.p_size+"'");
+        if (req.query.p_size) {
+            str = str.concat(" AND p_size = '" + req.query.p_size + "'");
+        } else if (req.query.maxPrice && req.query.minPrice) {
+            str = str.concat(" AND price BETWEEN " + req.query.minPrice + " AND " + req.query.maxPrice);
+        } else if (req.query.maxPrice && !req.query.minPrice) {
+            str = str.concat(" AND price <= " + req.query.maxPrice);
         }
-        else if(req.query.maxPrice && req.query.minPrice){
-            str = str.concat(" AND price BETWEEN "+req.query.minPrice +" AND " + req.query.maxPrice);
+        if (!req.query.maxPrice && req.query.minPrice) {
+            str = str.concat(" AND price >= " + req.query.minPrice);
         }
-        else if(req.query.maxPrice && !req.query.minPrice){
-            str = str.concat(" AND price <= "+req.query.maxPrice);
-        }
-        if(!req.query.maxPrice && req.query.minPrice){
-            str =  str.concat(" AND price >= "+req.query.minPrice);
-        }
-        if(req.query.mixer){
-            str =  str.concat(" AND p_id like '%"+req.query.mixer+"%'");
+        if (req.query.mixer) {
+            str = str.concat(" AND p_id like '%" + req.query.mixer + "%'");
         }
         console.log(str);
         con.query(str, function (err, result) {
@@ -229,23 +260,35 @@ app.get("/searchProduct",(req,res)=>{
                 return err;
             }
             if (result.length > 0) {
-                res.send({result: true, content: result.map(m=>{let v=m; v.isEdit=false; return v;})});
+                res.send({
+                    result: true,
+                    content: result.map(m => {
+                        let v = m;
+                        v.isEdit = false;
+                        return v;
+                    })
+                });
             } else {
-                res.send({result: false, message: "not found"});
+                res.send({
+                    result: false,
+                    message: "not found"
+                });
             }
         });
     } catch (e) {
-        res.send({error: e})
+        res.send({
+            error: e
+        })
     }
 });
 
-app.post("/Product",(req,res)=>{
+app.post("/Product", (req, res) => {
 
 });
 
 app.post("/updateProduct", function (req, res) {
     console.log("reqqqqqq", req.body);
-    
+
     let sql = "UPDATE product SET p_name = ':p_name', p_size = ':p_size', price = ':price', mixer = ':mixer',p_img = FROM_BASE64(':p_img') WHERE product.p_id = ':p_id'";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':p_name', req.body.p_name)
@@ -262,14 +305,93 @@ app.post("/updateProduct", function (req, res) {
             res.send(result);
         });
     } catch (e) {
-        res.send({error: e})
+        res.send({
+            error: e
+        })
     }
 });
 
+// account =====================================================================
+app.get("/getAccount", function (req, res) {
+    
+    let str = str = "SELECT * FROM account";
+    try {
+        con.query(str, function (err, result) {
+            if (err) {
+                return err;
+            }
+            if (result.length > 0) {
+                res.send({
+                    result: true,
+                    content: result.map(response => {
+                        response.isEdit = false;
+                        return response;
+                    })
+                });
+            } else {
+                res.send({
+                    result: false,
+                    message: "not found"
+                });
+            }
+        });
+    } catch (err) {
+        res.send({
+            result: false,
+            error: err
+        })
+    }
+});
+
+
+app.post("/Register", function (req, res) {
+    let sql = "INSERT INTO account (username, password, name, address, tel, line_id, type, email, image) VALUES (':username', ':password', ':name', ':address', ':tel', ':line_id', ':type', ':email', ':image');";
+    sql = sql.replace(':username', req.body.username)
+        .replace(':password', req.body.password)
+        .replace(':name', req.body.name)
+        .replace(':address', req.body.address)
+        .replace(':tel', req.body.tel)
+        .replace(':line_id', req.body.line_id)
+        .replace(':type', req.body.type)
+        .replace(':email', req.body.email)
+        .replace(':image', req.body.image.replace(/^data:image\/[a-z]+;base64,/, ""));
+        let obj ={result:""}
+    try {
+        con.query(sql, function (err, result) {
+            if (err) {
+                obj.result = err
+            }else{
+                obj.result = "succcess"
+
+            }
+        res.send(obj);
+        });
+    } catch (e) {
+        res.send({
+            error: e
+        })
+    }
+});
+
+// account =====================================================================
 
 app.listen(3000, () => {
     console.log('Start server at port 3000.')
 });
 
-function isNotNull(value){
-}
+function isNotNull(value) {}
+
+
+// data test
+// { 
+//     "username": "guernz",
+//     "password": "32",
+//     "confirmPassword": "321",
+//     "name": "321",
+//     "address": "321",
+//     "tel": "321",
+//     "line_id": "321",
+//     "type": "M",
+//     "email": "3211",
+//     "image": "231"
+// }
