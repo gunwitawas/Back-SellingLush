@@ -1,5 +1,6 @@
 import express from "express";
 import * as connection from "../connection";
+
 const router = express.Router();
 const con = connection.con;
 
@@ -39,8 +40,7 @@ router.get("/login", function (req, res) {
         })
     }
 });
-
-router.get("/checkValidUsername",  (req, res) =>{
+router.get("/checkValidUsername", (req, res) => {
     console.log(req.query);
     try {
         let name = req.query.username;
@@ -71,18 +71,15 @@ router.get("/checkValidUsername",  (req, res) =>{
         })
     }
 });
-
 router.post("/regis", function (req, res) {
-    console.log(req);
-
-    let sql = "insert into account values(':username',':password',':name',':address',':tel',':line_id',':type',':email',FROM_BASE64(':image'))";
+    let sql = "insert into account values(':username',':password',':name',':address',':tel',':line_id',':type',':email','')";
     sql = sql.replace(':username', req.body.usernameRegis)
         .replace(':password', req.body.passwordRegis)
         .replace(':address', req.body.inputAddress)
         .replace(':tel', req.body.inputTel)
         .replace(':line_id', req.body.inputLine)
-        .replace(':email', req.body.inputEmail)
-        .replace(':image', req.body.image);
+        .replace(':email', req.body.inputEmail);
+
     try {
         con.query(sql, function (err, result) {
             if (err) {

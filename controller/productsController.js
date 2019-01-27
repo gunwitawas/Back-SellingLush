@@ -112,8 +112,6 @@ router.get("/searchProduct", (req, res) => {
     }
 });
 router.post("/updateProduct", function (req, res) {
-    console.log("reqqqqqq", req.body);
-
     let sql = "UPDATE product SET p_name = ':p_name', p_size = ':p_size', price = ':price', mixer = ':mixer',p_img = FROM_BASE64(':p_img') WHERE product.p_id = ':p_id'";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':p_name', req.body.p_name)
