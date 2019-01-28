@@ -5,7 +5,8 @@ const con = connection.con;
 
 router.get("/getAccount", function (req, res) {
 
-    let str = "SELECT * FROM account";
+    // let str = "SELECT * FROM account";
+    let str = "SELECT username, password, name, address, tel, line_id, type, email, TO_BASE64(image) AS image FROM account";
     try {
         con.query(str, function (err, result) {
             if (err) {
@@ -43,12 +44,12 @@ router.post("/Register", function (req, res) {
         .replace(':line_id', req.body.line_id)
         .replace(':type', req.body.type)
         .replace(':email', req.body.email)
-        .replace(':image', req.body.image.replace(/^data:image\/[a-z]+;base64,/, ""));
+        .replace(':image', req.body.upLoadImage.replace(/^data:image\/[a-z]+;base64,/, ""));
     let obj ={result:""}
     try {
         con.query(sql, function (err, result) {
             if (err) {
-                obj.result = err
+                obj.result = "duplicate"
             }else{
                 obj.result = "succcess"
 
