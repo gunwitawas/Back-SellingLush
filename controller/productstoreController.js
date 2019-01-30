@@ -6,8 +6,16 @@ const con = connection.con;
 
 
 router.get("/getProductStore", (req, res) => {
-    console.log(req.query);
-    let str = "select s.*,p.p_name,false as \"isNew\",false as \"isUpdate\", false as \"isNew\"  from product_store s inner join product p on p.p_id = s.p_id";
+    let date = convert(new Date(req.query.selectedDate));
+    let str = "select s.*," +
+        "p.p_name,false as \"isNew\"," +
+        "false as \"isUpdate\", " +
+        "false as \"isEdit\" " +
+        " from product_store s " +
+        "inner join product p on p.p_id = s.p_id " +
+        "where s.sale_date=STR_TO_DATE(':selectedDate', '%Y-%m-%d') ";
+    str = str.replace(':selectedDate', date);
+    console.log(str);
     try {
         con.query(str, function (err, result) {
             if (err) {
@@ -37,7 +45,7 @@ router.get("/getProductStore", (req, res) => {
     }
 });
 
-router.post("/insertProductStore",  (req, res) => {
+router.post("/insertProductStore", (req, res) => {
     let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', :sale_date, :stockQty, :saleQty);";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':sale_date', req.body.sale_date)
@@ -60,5 +68,9 @@ router.post("/insertProductStore",  (req, res) => {
         })
     }
 });
+
+function convert(date) {
+    return date.getFullYear() + "-" + date.getMonth() + 1 + "-" + date.getDate();
+}
 
 module.exports = router;

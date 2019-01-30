@@ -72,12 +72,14 @@ router.get("/checkValidUsername", (req, res) => {
     }
 });
 router.post("/regis", function (req, res) {
-    let sql = "insert into account values(':username',':password',':name',':address',':tel',':line_id',':type',':email','')";
+    console.log(req.body);
+    let sql = "insert into account values(':username',':password',':name',':address',':tel',':line_id',':type',':email',FROM_BASE64(':image'))";
     sql = sql.replace(':username', req.body.usernameRegis)
         .replace(':password', req.body.passwordRegis)
         .replace(':address', req.body.inputAddress)
         .replace(':tel', req.body.inputTel)
         .replace(':line_id', req.body.inputLine)
+        .replace(':image', req.body.image.replace(/^data:image\/[a-z]+;base64,/, ""))
         .replace(':email', req.body.inputEmail);
 
     try {
