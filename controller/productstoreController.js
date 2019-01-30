@@ -1,17 +1,19 @@
 import express from "express";
 import * as connection from "../connection";
+
 const router = express.Router();
 const con = connection.con;
 
-router.get("/getAccount", function (req, res) {
 
-    // let str = "SELECT * FROM account";
-    let str = "SELECT username, password, name, address, tel, line_id, type, email, TO_BASE64(image) AS image FROM account";
+router.get("/getProductStore", (req, res) => {
+    console.log(req.query);
+    let str = "select s.*,p.p_name,false as \"isNew\",false as \"isUpdate\", false as \"isNew\"  from product_store s inner join product p on p.p_id = s.p_id";
     try {
         con.query(str, function (err, result) {
             if (err) {
                 return err;
             }
+            console.log(result);
             if (result.length > 0) {
                 res.send({
                     result: true,
@@ -34,23 +36,19 @@ router.get("/getAccount", function (req, res) {
         })
     }
 });
-router.post("/Register", function (req, res) {
-    let sql = "INSERT INTO account (username, password, name, address, tel, line_id, type, email, image) VALUES (':username', ':password', ':name', ':address', ':tel', ':line_id', ':type', ':email', ':image');";
-    sql = sql.replace(':username', req.body.username)
-        .replace(':password', req.body.password)
-        .replace(':name', req.body.name)
-        .replace(':address', req.body.address)
-        .replace(':tel', req.body.tel)
-        .replace(':line_id', req.body.line_id)
-        .replace(':type', req.body.type)
-        .replace(':email', req.body.email)
-        .replace(':image', req.body.upLoadImage.replace(/^data:image\/[a-z]+;base64,/, ""));
-    let obj ={result:""}
+
+router.post("/insertProductStore",  (req, res) => {
+    let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', :sale_date, :stockQty, :saleQty);";
+    sql = sql.replace(':p_id', req.body.p_id)
+        .replace(':sale_date', req.body.sale_date)
+        .replace(':stockQty', req.body.name)
+        .replace(':saleQty', req.body.address);
+    let obj = {result: ""}
     try {
         con.query(sql, function (err, result) {
             if (err) {
                 obj.result = "duplicate"
-            }else{
+            } else {
                 obj.result = "succcess"
 
             }

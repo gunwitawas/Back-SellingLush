@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import user from './controller/userController.js';
 import product from './controller/productsController.js';
 import account from './controller/accountController.js';
+import productStore from './controller/productstoreController.js';
 const app = express();
 app.use(bodyParser({
     limit: '50mb'
@@ -39,6 +40,7 @@ app.all('*', function (req, res, next) {
 app.use('/user', user);
 app.use('/product', product);
 app.use('/account', account);
+app.use('/productStore', productStore);
 app.listen(3000, () => {
     console.log('Start server at port 3000.')
 });
