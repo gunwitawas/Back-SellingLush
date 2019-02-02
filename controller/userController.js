@@ -1,10 +1,33 @@
 import express from "express";
 import * as connection from "../connection";
-
 const router = express.Router();
 const con = connection.con;
+const { ConnectMongo } = require('../constance/ConnectMongo')
+/*
+*
+* */
+
 
 // About page route.
+router.get('/get', (req, res) => {
+    //let db = ConnectMongo.myactivity.user_profile;
+    ConnectMongo.myactivity.collection('user_profile').find({name: {'$regex': req.query.name}}).toArray((err, result) => {
+        if (err) throw err;
+        res.send(result);
+    })
+  /*  MongoClient.connect(dbConfig.mongoUrl,
+        dbConfig.parser,
+        (err, client) => {
+            if (err) res.send(err);
+            let db = client.db('myactivity').collection('user_profile');
+            db.find({name: {'$regex': req.query.name}}).toArray((err, result) => {
+                if (err) throw err;
+                res.send(result);
+            })
+        });*/
+
+})
+
 router.get("/login", function (req, res) {
     console.log(req.query);
     try {
@@ -79,6 +102,7 @@ router.post("/regis", function (req, res) {
         .replace(':address', req.body.inputAddress)
         .replace(':tel', req.body.inputTel)
         .replace(':line_id', req.body.inputLine)
+        .replace(':type', req.body.type)
         .replace(':image', req.body.image.replace(/^data:image\/[a-z]+;base64,/, ""))
         .replace(':email', req.body.inputEmail);
 
