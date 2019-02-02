@@ -46,19 +46,65 @@ router.get("/getProductStore", (req, res) => {
 });
 
 router.post("/insertProductStore", (req, res) => {
-    let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', :sale_date, :stockQty, :saleQty);";
+    let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', STR_TO_DATE(':sale_date', '%Y-%m-%d'), :stockQty, :saleQty);";
     sql = sql.replace(':p_id', req.body.p_id)
-        .replace(':sale_date', req.body.sale_date)
-        .replace(':stockQty', req.body.name)
-        .replace(':saleQty', req.body.address);
+        .replace(':sale_date', convert(new Date(req.body.sale_date)))
+        .replace(':stockQty', req.body.stockQty)
+        .replace(':saleQty', req.body.saleQty);
     let obj = {result: ""}
     try {
         con.query(sql, function (err, result) {
             if (err) {
-                obj.result = "duplicate"
+                obj.result = err;
             } else {
-                obj.result = "succcess"
+                obj.result = "success";
+            }
+            res.send(obj);
+        });
+    } catch (e) {
+        res.send({
+            error: e
+        })
+    }
+});
 
+router.post("/updateProductStore", (req, res) => {
+    let sql = "UPDATE sellinglush.product_store SET stockQty = :stockQty WHERE p_id = ':p_id' AND sale_date = STR_TO_DATE(':sale_date', '%Y-%m-%d');";
+    // let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', STR_TO_DATE(':sale_date', '%Y-%m-%d'), :stockQty, :saleQty);";
+    sql = sql.replace(':p_id', req.body.p_id)
+        .replace(':sale_date', convert(new Date(req.body.sale_date)))
+        .replace(':stockQty', Number(req.body.stockQty));
+    console.log(sql);
+    let obj = {result: ""}
+    try {
+        con.query(sql, function (err, result) {
+            if (err) {
+                obj.result = err;
+            } else {
+                obj.result = "success";
+            }
+            res.send(obj);
+        });
+    } catch (e) {
+        res.send({
+            error: e
+        })
+    }
+});
+
+router.post("/deleteProductStore", (req, res) => {
+    let sql = "DELETE FROM sellinglush.product_store WHERE p_id = ':p_id' AND sale_date = STR_TO_DATE(':sale_date', '%Y-%m-%d');";
+    // let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', STR_TO_DATE(':sale_date', '%Y-%m-%d'), :stockQty, :saleQty);";
+    sql = sql.replace(':p_id', req.body.p_id)
+        .replace(':sale_date', convert(new Date(req.body.sale_date)));
+    console.log(sql);
+    let obj = {result: ""}
+    try {
+        con.query(sql, function (err, result) {
+            if (err) {
+                obj.result = err;
+            } else {
+                obj.result = "success";
             }
             res.send(obj);
         });
@@ -70,7 +116,7 @@ router.post("/insertProductStore", (req, res) => {
 });
 
 function convert(date) {
-    return date.getFullYear() + "-" + date.getMonth() + 1 + "-" + date.getDate();
+    return date.getFullYear() + "-" + (Number(date.getMonth()) + 1) + "-" + date.getDate();
 }
 
 module.exports = router;

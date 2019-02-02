@@ -59,6 +59,7 @@ router.get("/login", function (req, res) {
         })
     }
 });
+
 router.get("/checkValidUsername", (req, res) => {
     console.log(req.query);
     try {
@@ -90,6 +91,7 @@ router.get("/checkValidUsername", (req, res) => {
         })
     }
 });
+
 router.post("/regis", function (req, res) {
     console.log(req.body);
     let sql = "insert into account values(':username',':password',':name',':address',':tel',':line_id',':type',':email',FROM_BASE64(':image'))";
