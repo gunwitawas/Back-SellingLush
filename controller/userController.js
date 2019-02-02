@@ -1,8 +1,9 @@
 import express from "express";
 import * as connection from "../connection";
+import * as MongoClient from "mongodb";
+import * as dbConfig from "../constance/dbconfig";
 const router = express.Router();
 const con = connection.con;
-const { ConnectMongo } = require('../constance/ConnectMongo')
 /*
 *
 * */
@@ -10,12 +11,7 @@ const { ConnectMongo } = require('../constance/ConnectMongo')
 
 // About page route.
 router.get('/get', (req, res) => {
-    //let db = ConnectMongo.myactivity.user_profile;
-    ConnectMongo.myactivity.collection('user_profile').find({name: {'$regex': req.query.name}}).toArray((err, result) => {
-        if (err) throw err;
-        res.send(result);
-    })
-  /*  MongoClient.connect(dbConfig.mongoUrl,
+    MongoClient.connect(dbConfig.mongoUrl,
         dbConfig.parser,
         (err, client) => {
             if (err) res.send(err);
@@ -24,7 +20,7 @@ router.get('/get', (req, res) => {
                 if (err) throw err;
                 res.send(result);
             })
-        });*/
+        });
 
 })
 
