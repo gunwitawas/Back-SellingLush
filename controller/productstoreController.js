@@ -1,5 +1,6 @@
 import express from "express";
 import * as connection from "../connection";
+
 const router = express.Router();
 const con = connection.con;
 
@@ -93,7 +94,6 @@ router.post("/updateProductStore", (req, res) => {
 
 router.post("/deleteProductStore", (req, res) => {
     let sql = "DELETE FROM sellinglush.product_store WHERE p_id = ':p_id' AND sale_date = STR_TO_DATE(':sale_date', '%Y-%m-%d');";
-    // let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', STR_TO_DATE(':sale_date', '%Y-%m-%d'), :stockQty, :saleQty);";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':sale_date', convert(new Date(req.body.sale_date)));
     console.log(sql);
