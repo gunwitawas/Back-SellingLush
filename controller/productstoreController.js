@@ -6,7 +6,6 @@ const con = connection.con;
 
 
 router.get("/getProductStore", (req, res) => {
-    let date = convert(new Date(req.query.selectedDate));
     let str = "select s.*," +
         "p.p_name,false as \"isNew\"," +
         "false as \"isUpdate\", " +
@@ -14,7 +13,7 @@ router.get("/getProductStore", (req, res) => {
         " from product_store s " +
         "inner join product p on p.p_id = s.p_id " +
         "where s.sale_date=STR_TO_DATE(':selectedDate', '%Y-%m-%d') ";
-    str = str.replace(':selectedDate', date);
+    str = str.replace(':selectedDate', req.query.selectedDate);
     console.log(str);
     try {
         con.query(str, function (err, result) {
