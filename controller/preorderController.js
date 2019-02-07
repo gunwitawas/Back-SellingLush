@@ -35,9 +35,70 @@ router.post("/insertPreorderDetail", function (req, res) {
     }
 });
 
+
+router.post("/insertPreorderlist", function (req, res) {
+    console.log(req);
+    
+    let sql = "INSERT INTO `preorder_list` (`pre_id`, `p_id`, `qty`) VALUES (':pre_id', ':p_id', ':qty');";
+    sql = sql.replace(':pre_id', req.body.pre_id)
+        .replace(':p_id', req.body.p_id)
+        .replace(':qty', req.body.qty)
+    let obj = {
+        result: "",
+        message: ""
+    }
+    try {
+        con.query(sql, function (err, result) {
+            if (err) {
+                obj.result = result;
+                obj.message = "Duplicate";
+            } else {
+                obj.result = result;
+                obj.message = "Success";
+            }
+            res.send(obj);
+        });
+    } catch (error) {
+        obj.result = error;
+        obj.message = "error";
+        res.send(obj)
+    }
+});
+
 router.get("/getAllPreOrder", function (req, res) {
     try {
         let str = "SELECT * FROM preorder_detail";
+        con.query(str, function (err, result) {
+            if (err) {
+                return err;
+            }
+            if (result.length > 0) {
+                res.send({
+                    result: true,
+                    content: result.map(m => {
+                        let v = m;
+                        v.isEdit = false;
+                        return v;
+                    })
+                });
+            } else {
+                res.send({
+                    result: false,
+                    message: "not found"
+                });
+            }
+        });
+    } catch (e) {
+        res.send({
+            result: false,
+            error: e
+        })
+    }
+});
+
+router.get("/getAllPreOrderList", function (req, res) {
+    try {
+        let str = "SELECT * FROM preorder_list";
         con.query(str, function (err, result) {
             if (err) {
                 return err;
