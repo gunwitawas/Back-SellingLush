@@ -1,5 +1,6 @@
 import express from "express";
 import * as connection from "../connection";
+import pool from "../constance/dbpool"
 
 const router = express.Router();
 const con = connection.con;
@@ -36,10 +37,8 @@ router.get("/getProductStore", (req, res) => {
     }
 });
 
-
-
 router.get("/searchProductStore", (req, res) => {
-    let str = "select s.*," +
+    let str = "select s.*,p.p_name,p.price,p.mixer,p.p_size," +
         "TO_BASE64(p_img) as p_img " +
         " from product_store s " +
         "inner join product p on p.p_id = s.p_id " +
@@ -93,26 +92,70 @@ router.get("/searchProductStore", (req, res) => {
         })
     }
 });
-router.post("/insertProductStore", (req, res) => {
-    let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', STR_TO_DATE(':sale_date', '%Y-%m-%d'), :stockQty, :saleQty);";
-    sql = sql.replace(':p_id', req.body.p_id)
-        .replace(':sale_date', convert(new Date(req.body.sale_date)))
-        .replace(':stockQty', req.body.stockQty)
-        .replace(':saleQty', req.body.saleQty);
-    let obj = {result: ""}
+
+router.post("/insertOrderDetail", async (req, res) => {
+    let sql = "INSERT INTO sellinglush.order_detail (order_id, username, order_date, status, pay_by, pay_img, net_pay) " +
+        "select ifnull(LPAD(CAST(max(order_id) + 1 AS SIGNED), 11, '0'),\n" +
+        "              LPAD('1', 11, '0')) as order_id,\n" +
+        "       ':username'                  as username,\n" +
+        "       now()                      as order_date,\n" +
+        "       'N'                        as status,\n" +
+        "       ''                         as pay_by,\n" +
+        "       null                       as pay_img,\n" +
+        "       :net_pay                   as net_pay\n" +
+        "from order_detail";
+    sql = sql.replace(':username', req.body.username)
+        .replace(':net_pay', req.body.net_pay);
+    console.log(sql);
+    let obj = {
+        result: "",
+        order_id: "",
+        message: ""
+    }
+    try {
+        let result = await pool.query(sql);
+        obj.result = result;
+        obj.message = "Success";
+        result = await pool.query("select max(order_id) as order_id from order_detail");
+        obj.order_id = result[0].order_id;
+        await res.send(obj);
+    } catch (error) {
+        obj.result = error;
+        obj.message = "error";
+        await res.send(obj)
+    }
+});
+
+router.get("getOrderDetailByID", (req, res) => {
+
+})
+
+router.post("/insertOrderList", (req, res) => {
+    let sql = "INSERT INTO sellinglush.order_list (order_id, p_id, qty, price) VALUES (':order_id', ':p_id', :qty, :price)";
+    sql = sql.replace(':order_id', req.body.order_id)
+        .replace(':p_id', req.body.p_id)
+        .replace(':qty', req.body.qty)
+        .replace(':price', req.body.price);
+    let obj = {
+        result: "",
+        message: ""
+    }
     try {
         con.query(sql, function (err, result) {
             if (err) {
-                obj.result = err;
+                obj.result = result;
+                obj.message = "Duplicate";
             } else {
-                obj.result = "success";
+                obj.result = result;
+                obj.message = "Success";
             }
             res.send(obj);
         });
-    } catch (e) {
-        res.send({
-            error: e
-        })
+    } catch (error) {
+
+        obj.result = error;
+        obj.message = "error";
+        res.send(obj)
     }
 });
 
