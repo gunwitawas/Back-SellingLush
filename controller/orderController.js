@@ -126,7 +126,7 @@ router.post("/insertOrderDetail", async (req, res) => {
 });
 
 router.get("/getOrderDetailByID", async (req, res) => {
-    let sql = "SELECT * FROM order_detail WHERE order_id = ':order_id'";
+    let sql = "SELECT o.order_id,o.username,o.order_date,o.status,o.pay_by,TO_BASE64(o.pay_img) as pay_img  FROM order_detail o WHERE o.order_id = ':order_id'";
     sql = sql.replace(':order_id', req.query.order_id);
     let result = await pool.query(sql);
     let resObj = {
@@ -138,7 +138,7 @@ router.get("/getOrderDetailByID", async (req, res) => {
     result = await pool.query(sql);
     resObj.orderList = result;
     await res.send(resObj);
-})
+});
 
 router.post("/insertOrderList", (req, res) => {
     let sql = "INSERT INTO sellinglush.order_list (order_id, p_id, qty, price) VALUES (':order_id', ':p_id', :qty, :price)";
@@ -170,8 +170,7 @@ router.post("/insertOrderList", (req, res) => {
 });
 
 router.post("/comfirmPayment", async (req, res) => {
-    try
-    {
+    try {
         console.log(req.body.orderDetail.order_id);
         let sql = "UPDATE ORDER_DETAIL SET pay_img = from_base64(':pay_img') , status = 'W' WHERE order_id = ':order_id'"
             .replace(":order_id", req.body.orderDetail.order_id)
@@ -203,7 +202,7 @@ router.post("/comfirmPayment", async (req, res) => {
 });
 
 router.post("/clearOrderOverdue", async (req, res) => {
-    let sql = "SELECT * FROM ORDER_DETAIL WHERE status = 'N'";
+    let sql = "SELECT * FROM ORDER_DETAIL WHERE status = 'N' and order_date <  DATE_FORMAT(now(), '%Y-%m-%d')";
     let result = await pool.query(sql);
     if (result.length > 0) {
         sql = "UPDATE ORDER_DETAIL SET STATUS='C' WHERE status ='N'";
@@ -216,7 +215,7 @@ router.post("/clearOrderOverdue", async (req, res) => {
 
 router.get("/getOrderDetailByUsername", async (req, res) => {
     try {
-        let sql = "SELECT * FROM order_detail WHERE username = ':username' order by order_date desc"
+        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by FROM order_detail o WHERE username = ':username' order by order_date desc"
             .replace(":username", req.query.username);
         let result = await pool.query(sql);
         let resResult = [];
@@ -230,7 +229,31 @@ router.get("/getOrderDetailByUsername", async (req, res) => {
             resResult.push(v);
         }
         res.send(resResult);
+    } catch (e) {
+        res.send(e)
+    }
+});
 
+router.get("/getOrderDetailByStatus", async (req, res) => {
+    try {
+        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by FROM order_detail o WHERE 1=1 ";
+        if (req.query.status) {
+            sql += "and status = ':status' "
+                .replace(":status", req.query.status)
+        }
+        sql += " order by order_date desc ";
+        let result = await pool.query(sql);
+        let resResult = [];
+        for (let m of result) {
+            let v = m;
+            sql = "SELECT o.p_id,o.qty,o.price,p.p_name,p.mixer,p.p_size,TO_BASE64(p.p_img) as p_img FROM  order_list o inner join product p on o.p_id = p.p_id " +
+                " where o.order_id = :order_id"
+                    .replace(":order_id", m.order_id);
+            let list = await pool.query(sql);
+            v.orderList = list;
+            resResult.push(v);
+        }
+        res.send(resResult);
     } catch (e) {
         res.send(e)
     }
