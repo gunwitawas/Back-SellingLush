@@ -5,7 +5,6 @@ import pool from "../constance/dbpool"
 const router = express.Router();
 const con = connection.con;
 
-
 router.get("/getProductStore", (req, res) => {
     let str = "select s.p_id, stockQty, saleQty, p_name,price, p_size, mixer , TO_BASE64(p_img) as p_img " +
         "from product_store s" +
@@ -126,8 +125,19 @@ router.post("/insertOrderDetail", async (req, res) => {
     }
 });
 
-router.get("getOrderDetailByID", (req, res) => {
-
+router.get("/getOrderDetailByID", async (req, res) => {
+    let sql = "SELECT * FROM order_detail WHERE order_id = ':order_id'";
+    sql = sql.replace(':order_id', req.query.order_id);
+    let result = await pool.query(sql);
+    let resObj = {
+        orderDetail: result[0],
+        orderList: []
+    }
+    sql = "SELECT o.*, p.p_name,p.price, p.p_size, p.mixer , TO_BASE64(p.p_img) as p_img  FROM order_list o inner join product p on o.p_id = p.p_id WHERE order_id = ':order_id'";
+    sql = sql.replace(':order_id', req.query.order_id);
+    result = await pool.query(sql);
+    resObj.orderList = result;
+    await res.send(resObj);
 })
 
 router.post("/insertOrderList", (req, res) => {
@@ -156,6 +166,73 @@ router.post("/insertOrderList", (req, res) => {
         obj.result = error;
         obj.message = "error";
         res.send(obj)
+    }
+});
+
+router.post("/comfirmPayment", async (req, res) => {
+    try
+    {
+        console.log(req.body.orderDetail.order_id);
+        let sql = "UPDATE ORDER_DETAIL SET pay_img = from_base64(':pay_img') , status = 'W' WHERE order_id = ':order_id'"
+            .replace(":order_id", req.body.orderDetail.order_id)
+            .replace(":pay_img", req.body.orderDetail.pay_img.replace(/^data:image\/[a-z]+;base64,/, ""));
+        let result = await pool.query(sql);
+        let obj = {
+            result: true,
+            affectedRows: 0
+        }
+        if (result.affectedRows > 0) {
+            sql = "SELECT * from order_list where order_id = ':order_id'"
+                .replace(":order_id", req.body.orderDetail.order_id);
+            result = await pool.query(sql);
+            if (result.length > 0) {
+                for (let item of result) {
+                    sql = "UPDATE product_store SET stockQty = stockQty-" + item.qty +
+                        ",saleQty = saleQty+" + item.qty +
+                        " WHERE p_id = '" + item.p_id + "' and sale_date =STR_TO_DATE('" +
+                        convert(new Date(req.body.orderDetail.order_date)) + "', '%Y-%m-%d')";
+                    let r = await pool.query(sql);
+                    obj.affectedRows += r.affectedRows;
+                }
+            }
+        }
+        res.send(obj);
+    } catch (e) {
+        res.send(e)
+    }
+});
+
+router.post("/clearOrderOverdue", async (req, res) => {
+    let sql = "SELECT * FROM ORDER_DETAIL WHERE status = 'N'";
+    let result = await pool.query(sql);
+    if (result.length > 0) {
+        sql = "UPDATE ORDER_DETAIL SET STATUS='C' WHERE status ='N'";
+        result = await pool.query(sql);
+        res.send(result);
+    } else {
+        res.send({result: "Do not any order to action!"})
+    }
+});
+
+router.get("/getOrderDetailByUsername", async (req, res) => {
+    try {
+        let sql = "SELECT * FROM order_detail WHERE username = ':username' order by order_date desc"
+            .replace(":username", req.query.username);
+        let result = await pool.query(sql);
+        let resResult = [];
+        for (let m of result) {
+            let v = m;
+            sql = "SELECT o.p_id,o.qty,o.price,p.p_name,p.mixer,p.p_size,TO_BASE64(p.p_img) as p_img FROM  order_list o inner join product p on o.p_id = p.p_id " +
+                " where o.order_id = :order_id"
+                    .replace(":order_id", m.order_id);
+            let list = await pool.query(sql);
+            v.orderList = list;
+            resResult.push(v);
+        }
+        res.send(resResult);
+
+    } catch (e) {
+        res.send(e)
     }
 });
 
