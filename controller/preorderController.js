@@ -1,11 +1,13 @@
 import express from "express";
 import * as connection from "../connection";
+import pool from "../constance/dbpool"
+
 const router = express.Router();
 const con = connection.con;
 
 router.post("/insertPreorderDetail", function (req, res) {
     console.log(req);
-    
+
     let sql = "INSERT INTO preorder_detail (username, pre_date, payment_status, receive_status, receive_date, netpay) VALUES (':username', ':pre_date', ':payment_status', ':receive_status', ':receive_date', ':netpay')";
     sql = sql.replace(':username', req.body.username)
         .replace(':pre_date', req.body.pre_date)
@@ -38,8 +40,8 @@ router.post("/insertPreorderDetail", function (req, res) {
 
 router.post("/insertPreorderlist", function (req, res) {
     console.log(req);
-    
-    let sql = "INSERT INTO `preorder_list` (`pre_id`, `p_id`, `qty`) VALUES (':pre_id', ':p_id', ':qty');";
+
+    let sql = "INSERT INTO preorder_list (pre_id, p_id, qty) VALUES (':pre_id', ':p_id', ':qty');";
     sql = sql.replace(':pre_id', req.body.pre_id)
         .replace(':p_id', req.body.p_id)
         .replace(':qty', req.body.qty)
@@ -67,7 +69,7 @@ router.post("/insertPreorderlist", function (req, res) {
 
 router.get("/getAllPreOrder", function (req, res) {
     try {
-        let str = "SELECT * FROM preorder_detail";
+        let str = "SELECT pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay, TO_BASE64(pay_img) as pay_img FROM preorder_detail";
         con.query(str, function (err, result) {
             if (err) {
                 return err;
@@ -98,7 +100,7 @@ router.get("/getAllPreOrder", function (req, res) {
 
 router.get("/getAllPreOrderList", function (req, res) {
     try {
-        let str = "SELECT * FROM preorder_list";
+        let str = "SELECT o.*,p.*,TO_BASE64(p_img) as p_img FROM preorder_list o inner join product p on p.p_id = o.p_id ";
         con.query(str, function (err, result) {
             if (err) {
                 return err;
@@ -126,6 +128,30 @@ router.get("/getAllPreOrderList", function (req, res) {
         })
     }
 });
+
+router.post("/uploadImagePayment", async (req, res) => {
+
+    let sql = "UPDATE preorder_detail SET payment_status = ':payment_status', pay_img = FROM_BASE64(':pay_img') WHERE preorder_detail.pre_id = ':pre_id'";
+    sql = sql.replace(':pre_id', req.body.pre_id)
+        .replace(':payment_status', req.body.payment_status)
+        .replace(':pay_img', req.body.pay_img.replace(/^data:image\/[a-z]+;base64,/, ""));
+    let obj = {
+        result: "",
+        update_id: req.body.pre_id,
+        message: ""
+    }
+    try {
+        let result = await pool.query(sql);
+        obj.result = result;
+        obj.message = "Success";
+        await res.send(obj);
+    } catch (error) {
+        obj.result = error;
+        obj.message = "error";
+        await res.send(obj)
+    }
+});
+
 
 
 module.exports = router;
