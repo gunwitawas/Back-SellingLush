@@ -6,7 +6,6 @@ const router = express.Router();
 const con = connection.con;
 
 router.post("/insertPreorderDetail", function (req, res) {
-    console.log(req);
 
     let sql = "INSERT INTO preorder_detail (username, pre_date, payment_status, receive_status, receive_date, netpay) VALUES (':username', ':pre_date', ':payment_status', ':receive_status', ':receive_date', ':netpay')";
     sql = sql.replace(':username', req.body.username)

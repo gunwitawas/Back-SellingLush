@@ -213,6 +213,13 @@ router.post("/clearOrderOverdue", async (req, res) => {
     }
 });
 
+
+router.post("/updateOrderStatus", async (req, res) => {
+    let sql = "UPDATE ORDER_DETAIL SET STATUS=':status' WHERE order_id =':orderId'".replace(":status", req.body.status).replace(":orderId", req.body.orderId);
+    let result = await pool.query(sql);
+    res.send(result);
+});
+
 router.get("/getOrderDetailByUsername", async (req, res) => {
     try {
         let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by FROM order_detail o WHERE username = ':username' order by order_date desc"
@@ -236,7 +243,7 @@ router.get("/getOrderDetailByUsername", async (req, res) => {
 
 router.get("/getOrderDetailByStatus", async (req, res) => {
     try {
-        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by FROM order_detail o WHERE 1=1 ";
+        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by,TO_BASE64(o.pay_img) as pay_img  FROM order_detail o WHERE 1=1 ";
         if (req.query.status) {
             sql += "and status = ':status' "
                 .replace(":status", req.query.status)
@@ -257,6 +264,12 @@ router.get("/getOrderDetailByStatus", async (req, res) => {
     } catch (e) {
         res.send(e)
     }
+});
+
+router.get("/checkOrderStatusUnpaid", async (req, res) => {
+    let sql = "select order_id from order_detail where username = ':username' and (status = 'N' OR status='W')".replace(":username", req.query.username);
+    let result = await pool.query(sql);
+    res.send({result: result.length > 0});
 });
 
 function convert(date) {
