@@ -5,7 +5,6 @@ const con = connection.con;
 
 router.get("/getAccount", function (req, res) {
 
-    // let str = "SELECT * FROM account";
     let str = "SELECT username, password, name, address, tel, line_id, type, email, TO_BASE64(image) AS image FROM account";
     try {
         con.query(str, function (err, result) {
