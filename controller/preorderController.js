@@ -5,9 +5,19 @@ import pool from "../constance/dbpool"
 const router = express.Router();
 const con = connection.con;
 
-router.post("/insertPreorderDetail", function (req, res) {
+router.post("/insertPreorderDetail", async (req, res) => {
 
-    let sql = "INSERT INTO preorder_detail (username, pre_date, payment_status, receive_status, receive_date, netpay) VALUES (':username', ':pre_date', ':payment_status', ':receive_status', ':receive_date', ':netpay')";
+    let sql = "INSERT INTO preorder_detail (pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay) " +
+        "select ifnull(LPAD(CAST(max(pre_id) + 1 AS SIGNED), 11, '0'),\n" +
+        "              LPAD('1', 11, '0')) as pre_id,\n" +
+        "       ':username'                  as username,\n" +
+        "       ':pre_date'                      as pre_date,\n" +
+        "       ':payment_status'                        as payment_status,\n" +
+        "       ':receive_status'                         as receive_status,\n" +
+        "       ':receive_date'                       as receive_date,\n" +
+        "       ':netpay'                   as netpay\n" +
+        "from preorder_detail";
+
     sql = sql.replace(':username', req.body.username)
         .replace(':pre_date', req.body.pre_date)
         .replace(':payment_status', req.body.payment_status)
@@ -16,19 +26,18 @@ router.post("/insertPreorderDetail", function (req, res) {
         .replace(':netpay', req.body.netpay);
     let obj = {
         result: "",
+        pre_id: "",
         message: ""
     }
     try {
-        con.query(sql, function (err, result) {
-            if (err) {
-                obj.result = result;
-                obj.message = "Duplicate";
-            } else {
-                obj.result = result;
-                obj.message = "Success";
-            }
-            res.send(obj);
-        });
+        
+        let result = await pool.query(sql);
+        obj.result = result;
+        obj.message = "Success";
+        result = await pool.query("select max(pre_id) as pre_id from preorder_detail");
+        obj.pre_id = result[0].pre_id;
+        await res.send(obj);
+
     } catch (error) {
         obj.result = error;
         obj.message = "error";
@@ -148,6 +157,30 @@ router.post("/uploadImagePayment", async (req, res) => {
         obj.result = error;
         obj.message = "error";
         await res.send(obj)
+    }
+});
+
+router.post("/updatePatmentStatus", (req, res) => {
+    let sql = "UPDATE preorder_detail SET payment_status = ':payment_status' WHERE preorder_detail.pre_id = ':pre_id';".replace(":payment_status", req.body.payment_status).replace(":pre_id", req.body.pre_id);
+    let obj = {
+        result: "",
+        message: ""
+    }
+    try {
+        con.query(sql, function (err, result) {
+            if (err) {
+                obj.result = result;
+                obj.message = "error";
+            } else {
+                obj.result = result;
+                obj.message = "Success";
+            }
+            res.send(obj);
+        });
+    } catch (error) {
+        obj.result = error;
+        obj.message = "error";
+        res.send(obj)
     }
 });
 
