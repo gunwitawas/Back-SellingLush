@@ -2,10 +2,9 @@ import express from "express";
 import * as connection from "../connection";
 const router = express.Router();
 const con = connection.con;
+import pool from "../constance/dbpool"
 
 router.get("/getAccount", function (req, res) {
-
-    // let str = "SELECT * FROM account";
     let str = "SELECT username, password, name, address, tel, line_id, type, email, TO_BASE64(image) AS image FROM account";
     try {
         con.query(str, function (err, result) {
@@ -62,5 +61,6 @@ router.post("/Register", function (req, res) {
         })
     }
 });
+
 
 module.exports = router;

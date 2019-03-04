@@ -2,6 +2,7 @@ import express from "express";
 import * as connection from "../connection";
 import * as MongoClient from "mongodb";
 import * as dbConfig from "../constance/dbconfig";
+import pool from "../constance/dbpool";
 const router = express.Router();
 const con = connection.con;
 /*
@@ -120,4 +121,11 @@ router.post("/regis", function (req, res) {
 });
 
 
+router.get("/getUserProfileByUsername",async (req,res)=>{
+    let sql = "select username, name, address, tel, line_id, type, email, TO_BASE64(image) as image from account where username = ':username'"
+        .replace(":username",req.query.username);
+    let result = await pool.query(sql);
+    res.send(result[0]);
+
+});
 module.exports = router;
