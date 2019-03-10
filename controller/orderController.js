@@ -272,6 +272,12 @@ router.get("/checkOrderStatusUnpaid", async (req, res) => {
     res.send({result: result.length > 0});
 });
 
+router.post("/deleteOrderlist",async (req,res)=>{
+    let sql = "delete from order_list where order_id=':orderId'".replace(":orderId",req.body.order_id);
+    let result = await pool.query(sql);
+    return res.send(result);
+})
+
 function convert(date) {
     return date.getFullYear() + "-" + (Number(date.getMonth()) + 1) + "-" + date.getDate();
 }

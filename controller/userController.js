@@ -3,13 +3,12 @@ import * as connection from "../connection";
 import * as MongoClient from "mongodb";
 import * as dbConfig from "../constance/dbconfig";
 import pool from "../constance/dbpool";
+
 const router = express.Router();
 const con = connection.con;
 /*
 *
 * */
-
-
 // About page route.
 router.get('/get', (req, res) => {
     MongoClient.connect(dbConfig.mongoUrl,
@@ -23,7 +22,7 @@ router.get('/get', (req, res) => {
             })
         });
 
-})
+});
 
 router.get("/login", function (req, res) {
     console.log(req.query);
@@ -57,7 +56,7 @@ router.get("/login", function (req, res) {
     } catch (e) {
         res.send({
             error: e
-        })
+        });
     }
 });
 
@@ -120,12 +119,31 @@ router.post("/regis", function (req, res) {
     }
 });
 
+router.post("/updateProfile", async (req, res) => {
+    let sql = "UPDATE sellinglush.account " +
+        "SET " +
+        "    name     = ':name', " +
+        "    address  = ':address', " +
+        "    tel      = ':tel', " +
+        "    line_id  = ':line_id', " +
+        "    email    = ':email', " +
+        "    image    = from_base64(':image') " +
+        "WHERE username = ':username'"
+    sql = sql.replace(":name", req.body.name)
+        .replace(":username", req.body.username)
+        .replace(":address", req.body.address)
+        .replace(":tel", req.body.tel)
+        .replace(":line_id", req.body.line_id)
+        .replace(":email", req.body.email)
+        .replace(":image", req.body.image.replace(/^data:image\/[a-z]+;base64,/, ""));
+    let result = await pool.query(sql);
+    res.send(result);
+});
 
-router.get("/getUserProfileByUsername",async (req,res)=>{
-    let sql = "select username, name, address, tel, line_id, type, email, TO_BASE64(image) as image from account where username = ':username'"
-        .replace(":username",req.query.username);
+router.get("/getUserProfileByUsername", async (req, res) => {
+    let sql = "select username, name, address, tel, line_id, type, email,TO_BASE64(image) as image from account where username = ':username'"
+        .replace(":username", req.query.username);
     let result = await pool.query(sql);
     res.send(result[0]);
-
 });
 module.exports = router;
