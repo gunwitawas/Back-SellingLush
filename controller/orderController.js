@@ -140,7 +140,7 @@ router.get("/getOrderDetailByID", async (req, res) => {
     await res.send(resObj);
 });
 
-router.post("/insertOrderList", (req, res) => {
+router.post("/insertOrderList",async (req, res) => {
     let sql = "INSERT INTO sellinglush.order_list (order_id, p_id, qty, price) VALUES (':order_id', ':p_id', :qty, :price)";
     sql = sql.replace(':order_id', req.body.order_id)
         .replace(':p_id', req.body.p_id)
@@ -149,18 +149,11 @@ router.post("/insertOrderList", (req, res) => {
     let obj = {
         result: "",
         message: ""
-    }
+    };
     try {
-        con.query(sql, function (err, result) {
-            if (err) {
-                obj.result = result;
-                obj.message = "Duplicate";
-            } else {
-                obj.result = result;
-                obj.message = "Success";
-            }
-            res.send(obj);
-        });
+        let result = await pool.query(sql);
+        obj.result = result;
+        obj.message = "success";
     } catch (error) {
 
         obj.result = error;
@@ -179,7 +172,7 @@ router.post("/comfirmPayment", async (req, res) => {
         let obj = {
             result: true,
             affectedRows: 0
-        }
+        };
         if (result.affectedRows > 0) {
             sql = "SELECT * from order_list where order_id = ':order_id'"
                 .replace(":order_id", req.body.orderDetail.order_id);
