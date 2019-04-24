@@ -97,14 +97,14 @@ router.post("/insertOrderDetail", async (req, res) => {
         "select ifnull(LPAD(CAST(max(order_id) + 1 AS SIGNED), 11, '0'),\n" +
         "              LPAD('1', 11, '0')) as order_id,\n" +
         "       ':username'                  as username,\n" +
-        "       now()                      as order_date,\n" +
+        "       STR_TO_DATE(':currentDate', '%Y-%m-%d')              as order_date,\n" +
         "       'N'                        as status,\n" +
         "       ''                         as pay_by,\n" +
         "       null                       as pay_img,\n" +
         "       :net_pay                   as net_pay\n" +
         "from order_detail";
     sql = sql.replace(':username', req.body.username)
-        .replace(':net_pay', req.body.net_pay);
+        .replace(':net_pay', req.body.net_pay).replace(':currentDate',convert(new Date()));
     console.log(sql);
     let obj = {
         result: "",
@@ -117,6 +117,7 @@ router.post("/insertOrderDetail", async (req, res) => {
         obj.message = "Success";
         result = await pool.query("select max(order_id) as order_id from order_detail");
         obj.order_id = result[0].order_id;
+        console.log(obj)
         await res.send(obj);
     } catch (error) {
         obj.result = error;
@@ -158,8 +159,9 @@ router.post("/insertOrderList",async (req, res) => {
 
         obj.result = error;
         obj.message = "error";
-        res.send(obj)
     }
+
+    res.send(obj)
 });
 
 router.post("/comfirmPayment", async (req, res) => {
@@ -205,7 +207,6 @@ router.post("/clearOrderOverdue", async (req, res) => {
         res.send({result: "Do not any order to action!"})
     }
 });
-
 
 router.post("/updateOrderStatus", async (req, res) => {
     let sql = "UPDATE ORDER_DETAIL SET STATUS=':status' WHERE order_id =':orderId'".replace(":status", req.body.status).replace(":orderId", req.body.orderId);
