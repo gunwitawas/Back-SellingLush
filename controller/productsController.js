@@ -4,7 +4,7 @@ const router = express.Router();
 const con = connection.con;
 
 router.post("/insertProduct", function (req, res) {
-    let sql = "INSERT INTO product (p_id, p_name, p_size, price, mixer, p_img) VALUES (':p_id', ':p_name', ':p_size', :price, ':mixer', FROM_BASE64(':p_img'))";
+    let sql = "INSERT INTO product (p_id, p_name, p_size, price, mixer, p_img,create_date) VALUES (':p_id', ':p_name', ':p_size', :price, ':mixer', FROM_BASE64(':p_img'),now())";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':p_name', req.body.p_name)
         .replace(':p_size', req.body.p_size)
