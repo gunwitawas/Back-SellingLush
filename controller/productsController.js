@@ -26,9 +26,7 @@ router.post("/insertProduct", function (req, res) {
     }
 });
 router.get("/getAllProduct", function (req, res) {
-
     try {
-
         let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img from product";
 
         con.query(str, function (err, result) {
@@ -134,4 +132,74 @@ router.post("/updateProduct", function (req, res) {
     }
 });
 
+router.get("/getLatestProduct", function (req, res) {
+    try {
+        let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img from product order by create_date desc limit 3 ";
+
+        con.query(str, function (err, result) {
+            if (err) {
+                return err;
+            }
+            if (result.length > 0) {
+                res.send({
+                    result: true,
+                    content: result.map(m => {
+                        let v = m;
+                        v.isEdit = false;
+                        return v;
+                    })
+                });
+            } else {
+                res.send({
+                    result: false,
+                    message: "not found"
+                });
+            }
+        });
+    } catch (e) {
+        res.send({
+            result: false,
+            error: e
+        })
+    }
+
+});
+router.get("/getBestSellerProduct", function (req, res) {
+    try {
+        let str = "select p.p_id,p.p_name,p.p_size,p.price,p.mixer,TO_BASE64(p.p_img) as p_img \n" +
+            " from product p\n" +
+            "         inner join (\n" +
+            "    select sum(qty) as total, p_id\n" +
+            "    from order_list\n" +
+            "    group by p_id) t on p.p_id = t.p_id\n" +
+            " order by t.total desc limit 3 ";
+
+        con.query(str, function (err, result) {
+            if (err) {
+                return err;
+            }
+            if (result.length > 0) {
+                res.send({
+                    result: true,
+                    content: result.map(m => {
+                        let v = m;
+                        v.isEdit = false;
+                        return v;
+                    })
+                });
+            } else {
+                res.send({
+                    result: false,
+                    message: "not found"
+                });
+            }
+        });
+    } catch (e) {
+        res.send({
+            result: false,
+            error: e
+        })
+    }
+
+});
 module.exports = router;
