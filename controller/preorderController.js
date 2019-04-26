@@ -8,7 +8,7 @@ const con = connection.con;
 router.post("/insertPreorderDetail", async (req, res) => {
 console.log(req.body);
 
-    let sql = "INSERT INTO preorder_detail (pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay, address) " +
+    let sql = "INSERT INTO preorder_detail (pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay, address, delivery) " +
         "select ifnull(LPAD(CAST(max(pre_id) + 1 AS SIGNED), 11, '0'),\n" +
         "              LPAD('1', 11, '0')) as pre_id,\n" +
         "       ':username'                  as username,\n" +
@@ -17,7 +17,8 @@ console.log(req.body);
         "       ':receive_status'                         as receive_status,\n" +
         "       ':receive_date'                       as receive_date,\n" +
         "       ':netpay'                   as netpay,\n" +
-        "       ':address'                   as address\n" +
+        "       ':address'                   as address,\n" +
+        "       ':delivery'                   as delivery\n" +
         "from preorder_detail";
 
     sql = sql.replace(':username', req.body.username)
@@ -26,7 +27,8 @@ console.log(req.body);
         .replace(':receive_status', req.body.receive_status)
         .replace(':receive_date', req.body.receive_date)
         .replace(':netpay', req.body.netpay)
-        .replace(':address', req.body.address);
+        .replace(':address', req.body.address)
+        .replace(':delivery', req.body.delivery);
     let obj = {
         result: "",
         pre_id: "",
@@ -80,7 +82,7 @@ router.post("/insertPreorderlist", function (req, res) {
 
 router.get("/getAllPreOrder", function (req, res) {
     try {
-        let str = "SELECT pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay, address, TO_BASE64(pay_img) as pay_img FROM preorder_detail";
+        let str = "SELECT pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay, address,delivery, TO_BASE64(pay_img) as pay_img FROM preorder_detail";
         con.query(str, function (err, result) {
             if (err) {
                 return err;

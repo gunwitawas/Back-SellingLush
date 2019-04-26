@@ -127,7 +127,7 @@ router.post("/insertOrderDetail", async (req, res) => {
 });
 
 router.get("/getOrderDetailByID", async (req, res) => {
-    let sql = "SELECT o.order_id,o.username,o.order_date,o.status,o.pay_by,TO_BASE64(o.pay_img) as pay_img  FROM order_detail o WHERE o.order_id = ':order_id'";
+    let sql = "SELECT o.order_id,o.username,o.order_date,o.status,o.pay_by,TO_BASE64(o.pay_img) as pay_img, o.net_pay  FROM order_detail o WHERE o.order_id = ':order_id'";
     sql = sql.replace(':order_id', req.query.order_id);
     let result = await pool.query(sql);
     let resObj = {
@@ -216,7 +216,7 @@ router.post("/updateOrderStatus", async (req, res) => {
 
 router.get("/getOrderDetailByUsername", async (req, res) => {
     try {
-        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by FROM order_detail o WHERE username = ':username' order by order_date desc"
+        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by,o.pay_img,o.net_pay FROM order_detail o WHERE username = ':username' order by order_date desc"
             .replace(":username", req.query.username);
         let result = await pool.query(sql);
         let resResult = [];
