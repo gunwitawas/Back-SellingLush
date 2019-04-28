@@ -101,7 +101,7 @@ router.post("/insertOrderDetail", async (req, res) => {
         "       'N'                        as status,\n" +
         "       ''                         as pay_by,\n" +
         "       null                       as pay_img,\n" +
-        "       :net_pay                   as net_pay\n" +
+        "       :net_pay                   as net_pay \n" +
         "from order_detail";
     sql = sql.replace(':username', req.body.username)
         .replace(':net_pay', req.body.net_pay).replace(':currentDate',convert(new Date()));
@@ -216,14 +216,14 @@ router.post("/updateOrderStatus", async (req, res) => {
 
 router.get("/getOrderDetailByUsername", async (req, res) => {
     try {
-        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by,o.pay_img,o.net_pay FROM order_detail o WHERE username = ':username' order by order_date desc"
+        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by,o.pay_img,o.net_pay FROM order_detail o WHERE username = ':username' order by order_id desc"
             .replace(":username", req.query.username);
         let result = await pool.query(sql);
         let resResult = [];
         for (let m of result) {
             let v = m;
             sql = "SELECT o.p_id,o.qty,o.price,p.p_name,p.mixer,p.p_size,TO_BASE64(p.p_img) as p_img FROM  order_list o inner join product p on o.p_id = p.p_id " +
-                " where o.order_id = :order_id"
+                " where o.order_id = :order_id "
                     .replace(":order_id", m.order_id);
             let list = await pool.query(sql);
             v.orderList = list;

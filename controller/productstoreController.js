@@ -12,7 +12,7 @@ router.get("/getProductStore", (req, res) => {
         "false as \"isEdit\" " +
         " from product_store s " +
         "inner join product p on p.p_id = s.p_id " +
-        "where s.sale_date=STR_TO_DATE(':selectedDate', '%Y-%m-%d') ";
+        "where s.sale_date = STR_TO_DATE(':selectedDate', '%Y-%m-%d') ";
     str = str.replace(':selectedDate', req.query.selectedDate);
     console.log(str);
     try {

@@ -4,13 +4,16 @@ const router = express.Router();
 const con = connection.con;
 
 router.post("/insertProduct", function (req, res) {
-    let sql = "INSERT INTO product (p_id, p_name, p_size, price, mixer, p_img,create_date) VALUES (':p_id', ':p_name', ':p_size', :price, ':mixer', FROM_BASE64(':p_img'),now())";
+    let sql = "INSERT INTO product (p_id, p_name, p_size, price, mixer, p_img,create_date,limited_flag,expire_date) VALUES (':p_id', ':p_name', ':p_size', :price, ':mixer', FROM_BASE64(':p_img'),now(),':limitedFlag', STR_TO_DATE(':expireDate', '%Y-%m-%d'))";
+   let limitedFlag = req.body.limitedFlag ? "Y":"N";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':p_name', req.body.p_name)
         .replace(':p_size', req.body.p_size)
         .replace(':price', req.body.price)
         .replace(':mixer', req.body.mixer)
-        .replace(':p_img', req.body.p_img.replace(/^data:image\/[a-z]+;base64,/, ""));
+        .replace(':p_img', req.body.p_img.replace(/^data:image\/[a-z]+;base64,/, ""))
+        .replace(":limitedFlag",limitedFlag)
+        .replace(":expireDate",convert(new Date(req.body.expireDate)));
     try {
         con.query(sql, function (err, result) {
             if (err) {
@@ -25,9 +28,11 @@ router.post("/insertProduct", function (req, res) {
         })
     }
 });
+
+
 router.get("/getAllProduct", function (req, res) {
     try {
-        let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img from product";
+        let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img from product ORDER by limited_flag desc";
 
         con.query(str, function (err, result) {
             if (err) {
@@ -202,4 +207,8 @@ router.get("/getBestSellerProduct", function (req, res) {
     }
 
 });
+
+function convert(date) {
+    return date.getFullYear() + "-" + (Number(date.getMonth()) + 1) + "-" + date.getDate();
+}
 module.exports = router;
