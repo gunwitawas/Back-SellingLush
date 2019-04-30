@@ -6,7 +6,7 @@ const router = express.Router();
 const con = connection.con;
 
 router.get("/getProductStore", (req, res) => {
-    let str = "select s.p_id, stockQty, saleQty, p_name,price, p_size, mixer , TO_BASE64(p_img) as p_img " +
+    let str = "select s.p_id,p.p_name, p.expire_date, p.limited_flag, stockQty, saleQty, p_name,price, p_size, mixer , TO_BASE64(p_img) as p_img " +
         "from product_store s" +
         "       inner join product p on s.p_id = p.p_id" +
         " where sale_date = DATE_FORMAT(now(), '%Y-%m-%d')" +

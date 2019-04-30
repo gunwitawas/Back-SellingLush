@@ -7,12 +7,12 @@ const con = connection.con;
 
 router.get("/getProductStore", (req, res) => {
     let str = "select s.*," +
-        "p.p_name,false as \"isNew\"," +
+        " false as \"isNew\", " +
         "false as \"isUpdate\", " +
-        "false as \"isEdit\" " +
+        "false as \"isEdit\" ,p.p_name, p.expire_date, p.limited_flag " +
         " from product_store s " +
         "inner join product p on p.p_id = s.p_id " +
-        "where s.sale_date = STR_TO_DATE(':selectedDate', '%Y-%m-%d') ";
+        "where s.sale_date = STR_TO_DATE(':selectedDate', '%Y-%m-%d') order by p.limited_flag desc";
     str = str.replace(':selectedDate', req.query.selectedDate);
     console.log(str);
     try {
