@@ -82,7 +82,7 @@ router.post("/insertPreorderlist", function (req, res) {
 
 router.get("/getAllPreOrder", function (req, res) {
     try {
-        let str = "SELECT pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay, address,delivery, TO_BASE64(pay_img) as pay_img FROM preorder_detail";
+        let str = "SELECT pre_id, username, pre_date, payment_status, receive_status, receive_date, netpay, address,delivery, TO_BASE64(pay_img) as pay_img,tracking_code FROM preorder_detail";
         con.query(str, function (err, result) {
             if (err) {
                 return err;
@@ -166,7 +166,7 @@ router.post("/uploadImagePayment", async (req, res) => {
 });
 
 router.post("/updatePatmentStatus", (req, res) => {
-    let sql = "UPDATE preorder_detail SET payment_status = ':payment_status' WHERE preorder_detail.pre_id = ':pre_id';".replace(":payment_status", req.body.payment_status).replace(":pre_id", req.body.pre_id);
+    let sql = "UPDATE preorder_detail SET payment_status = ':payment_status',tracking_code = ':trackingCode' WHERE preorder_detail.pre_id = ':pre_id';".replace(":payment_status", req.body.payment_status).replace(":trackingCode", req.body.trackingCode).replace(":pre_id", req.body.pre_id);
     let obj = {
         result: "",
         message: ""
