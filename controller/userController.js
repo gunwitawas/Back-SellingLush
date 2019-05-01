@@ -73,7 +73,6 @@ router.get("/checkValidUsername", (req, res) => {
             if (result.length > 0) {
                 console.log(result);
                 let check = (name == result[0].username);
-
                 res.send({
                     result: false,
                     message: "Duplicate username"

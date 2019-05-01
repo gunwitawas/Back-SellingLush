@@ -1,5 +1,6 @@
 import express from "express";
 import * as connection from "../connection";
+import pool from "../constance/dbpool";
 
 const router = express.Router();
 const con = connection.con;
@@ -30,6 +31,25 @@ router.post("/insertProduct", function (req, res) {
     }
 });
 
+router.get("/getAvailableProduct", async (req,res)=>{
+    let str = "select p_id,p_name,p_size,price, limited_flag, expire_date,mixer , TO_BASE64(p_img) as p_img from product where (expire_date is null or (limited_flag = 'Y' and expire_date > now())) ORDER by limited_flag desc";
+    let result = await pool.query(str);
+    if (result.length > 0) {
+        res.send({
+            result: true,
+            content: result.map(m => {
+                let v = m;
+                v.isEdit = false;
+                return v;
+            })
+        });
+    } else {
+        res.send({
+            result: false,
+            message: "not found"
+        });
+    }
+});
 
 router.get("/getAllProduct", function (req, res) {
     try {
@@ -136,7 +156,6 @@ router.post("/updateProduct", function (req, res) {
         })
     }
 });
-
 router.get("/getLatestProduct", function (req, res) {
     try {
         let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img,expire_date from product where limited_flag = 'Y' order by expire_Date desc limit 3 ";
