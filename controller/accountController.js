@@ -34,10 +34,10 @@ router.get("/getAccount", function (req, res) {
     }
 });
 router.post("/Register", function (req, res) {
-    let sql = "INSERT INTO account (username, password, name, address, tel, line_id, type, email, image) VALUES (':username', ':password', ':name', ':address', ':tel', ':line_id', ':type', ':email', FROM_BASE64(':image'));";
+    let sql = "INSERT INTO account (username, password, name, address, tel, line_id, type, email, image) VALUES (':username', ':password', ':nameaccount', ':address', ':tel', ':line_id', ':type', ':email', FROM_BASE64(':image'));";
     sql = sql.replace(':username', req.body.username)
         .replace(':password', req.body.password)
-        .replace(':name', req.body.name)
+        .replace(':nameaccount', req.body.name)
         .replace(':address', req.body.address)
         .replace(':tel', req.body.tel)
         .replace(':line_id', req.body.line_id)
