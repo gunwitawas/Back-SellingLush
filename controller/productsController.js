@@ -32,7 +32,7 @@ router.post("/insertProduct", function (req, res) {
 });
 
 router.get("/getAvailableProduct", async (req,res)=>{
-    let str = "select p_id,p_name,p_size,price, limited_flag, expire_date,mixer , TO_BASE64(p_img) as p_img from product where (expire_date is null or (limited_flag = 'Y' and expire_date > now())) ORDER by limited_flag desc";
+    let str = "select p_id,p_name,p_size,price, limited_flag, expire_date,mixer , TO_BASE64(p_img) as p_img from product where (limited_flag = 'N' or (limited_flag = 'Y' and expire_date > now())) ORDER by limited_flag desc";
     let result = await pool.query(str);
     if (result.length > 0) {
         res.send({
