@@ -8,13 +8,12 @@ const con = connection.con;
 router.get("/getProductStore", (req, res) => {
     let str = "select s.*," +
         " false as \"isNew\", " +
-        "false as \"isUpdate\", " +
-        "false as \"isEdit\" ,TO_BASE64(p.p_img) as p_img ,p.p_name, p.expire_date, p.limited_flag " +
+        " false as \"isUpdate\", " +
+        " false as \"isEdit\" ,TO_BASE64(p.p_img) as p_img ,p.p_name, p.expire_date, p.limited_flag " +
         " from product_store s " +
-        "inner join product p on p.p_id = s.p_id " +
-        "where s.sale_date = STR_TO_DATE(':selectedDate', '%Y-%m-%d') order by p.limited_flag desc";
+        " inner join product p on p.p_id = s.p_id " +
+        " where s.sale_date = STR_TO_DATE(':selectedDate', '%Y-%m-%d') order by p.limited_flag desc ";
     str = str.replace(':selectedDate', req.query.selectedDate);
-    console.log(str);
     try {
         con.query(str, function (err, result) {
             if (err) {
@@ -69,7 +68,6 @@ router.post("/insertProductStore", (req, res) => {
 
 router.post("/updateProductStore", (req, res) => {
     let sql = "UPDATE sellinglush.product_store SET stockQty = :stockQty WHERE p_id = ':p_id' AND sale_date = STR_TO_DATE(':sale_date', '%Y-%m-%d');";
-    // let sql = "INSERT INTO sellinglush.product_store (p_id, sale_date, stockQty, saleQty) VALUES (':p_id', STR_TO_DATE(':sale_date', '%Y-%m-%d'), :stockQty, :saleQty);";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':sale_date', convert(new Date(req.body.sale_date)))
         .replace(':stockQty', Number(req.body.stockQty));
@@ -92,7 +90,7 @@ router.post("/updateProductStore", (req, res) => {
 });
 
 router.post("/deleteProductStore", (req, res) => {
-    let sql = "DELETE FROM sellinglush.product_store WHERE p_id = ':p_id' AND sale_date = STR_TO_DATE(':sale_date', '%Y-%m-%d');";
+    let sql = "DELETE FROM sellinglush.product_store WHERE p_id = ':p_id'  AND sale_date = STR_TO_DATE(':sale_date', '%Y-%m-%d');";
     sql = sql.replace(':p_id', req.body.p_id)
         .replace(':sale_date', convert(new Date(req.body.sale_date)));
     console.log(sql);

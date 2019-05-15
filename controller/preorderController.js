@@ -88,7 +88,6 @@ router.get("/getAllPreOrder", function (req, res) {
                     result: true,
                     content: result.map(m => {
                         let v = m;
-                        v.isEdit = false;
                         return v;
                     })
                 });

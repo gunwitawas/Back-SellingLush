@@ -104,7 +104,7 @@ router.post("/insertOrderDetail", async (req, res) => {
         "       :net_pay                   as net_pay \n" +
         "from order_detail";
     sql = sql.replace(':username', req.body.username)
-        .replace(':net_pay', req.body.net_pay).replace(':currentDate',convert(new Date()));
+        .replace(':net_pay', req.body.net_pay).replace(':currentDate', convert(new Date()));
     console.log(sql);
     let obj = {
         result: "",
@@ -141,7 +141,7 @@ router.get("/getOrderDetailByID", async (req, res) => {
     await res.send(resObj);
 });
 
-router.post("/insertOrderList",async (req, res) => {
+router.post("/insertOrderList", async (req, res) => {
     let sql = "INSERT INTO sellinglush.order_list (order_id, p_id, qty, price) VALUES (':order_id', ':p_id', :qty, :price)";
     sql = sql.replace(':order_id', req.body.order_id)
         .replace(':p_id', req.body.p_id)
@@ -166,7 +166,6 @@ router.post("/insertOrderList",async (req, res) => {
 
 router.post("/comfirmPayment", async (req, res) => {
     try {
-        console.log(req.body.orderDetail.order_id);
         let sql = "UPDATE ORDER_DETAIL SET pay_img = from_base64(':pay_img') , status = 'W' WHERE order_id = ':order_id'"
             .replace(":order_id", req.body.orderDetail.order_id)
             .replace(":pay_img", req.body.orderDetail.pay_img.replace(/^data:image\/[a-z]+;base64,/, ""));
@@ -252,6 +251,9 @@ router.get("/getOrderDetailByStatus", async (req, res) => {
                     .replace(":order_id", m.order_id);
             let list = await pool.query(sql);
             v.orderList = list;
+            sql = "select * from account where username = ':username'".replace(":username", m.username);
+            let userDetail = await pool.query(sql);
+            v.userDetail = userDetail[0];
             resResult.push(v);
         }
         res.send(resResult);
@@ -266,8 +268,8 @@ router.get("/checkOrderStatusUnpaid", async (req, res) => {
     res.send({result: result.length > 0});
 });
 
-router.post("/deleteOrderlist",async (req,res)=>{
-    let sql = "delete from order_list where order_id=':orderId'".replace(":orderId",req.body.order_id);
+router.post("/deleteOrderlist", async (req, res) => {
+    let sql = "delete from order_list where order_id=':orderId'".replace(":orderId", req.body.order_id);
     let result = await pool.query(sql);
     return res.send(result);
 })

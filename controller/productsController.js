@@ -158,7 +158,7 @@ router.post("/updateProduct", function (req, res) {
 });
 router.get("/getLatestProduct", function (req, res) {
     try {
-        let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img,expire_date from product where limited_flag = 'Y' order by expire_Date desc limit 3 ";
+        let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img,expire_date from product where limited_flag = 'Y' and expire_date <= now() order by expire_Date desc limit 3 ";
 
         con.query(str, function (err, result) {
             if (err) {
