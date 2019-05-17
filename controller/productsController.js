@@ -53,7 +53,7 @@ router.get("/getAvailableProduct", async (req,res)=>{
 
 router.get("/getAllProduct", function (req, res) {
     try {
-        let str = "select p_id,p_name,p_size,price, limited_flag, expire_date,mixer , TO_BASE64(p_img) as p_img from product ORDER by limited_flag desc";
+        let str = "select p_id,p_name,p_size,price, limited_flag, expire_date,mixer , TO_BASE64(p_img) as p_img from product where (limited_flag = 'N' or (limited_flag = 'Y' and expire_date > now())) ORDER by limited_flag desc";
         con.query(str, function (err, result) {
             if (err) {
                 return err;
@@ -85,7 +85,7 @@ router.get("/getAllProduct", function (req, res) {
 router.get("/searchProduct", (req, res) => {
     try {
         console.log(req.query);
-        let str = "select p_id,p_name,p_size,price,mixer,TO_BASE64(p_img) as p_img from product where 1=1";
+        let str = "select p_id,p_name,p_size,price, limited_flag, expire_date,mixer , TO_BASE64(p_img) as p_img from product where (limited_flag = 'N' or (limited_flag = 'Y' and expire_date > now())) ";
         if (req.query.p_id) {
             console.log(req.query.p_id);
             str = str.concat(" AND p_id like '%" + req.query.p_id + "%'");
@@ -104,9 +104,13 @@ router.get("/searchProduct", (req, res) => {
         if (!req.query.maxPrice && req.query.minPrice) {
             str = str.concat(" AND price >= " + req.query.minPrice);
         }
-        if (req.query.mixer) {
-            str = str.concat(" AND p_id like '%" + req.query.mixer + "%'");
+        if (req.query.p_size) {
+            str = str.concat(" AND p_size = '" + req.query.p_size + "'");
         }
+        if (req.query.mixer) {
+            str = str.concat(" AND mixer = '" + req.query.mixer + "'");
+        }
+        str = str.concat(" order by limited_flag ")
         console.log(str);
         con.query(str, function (err, result) {
             if (err) {
