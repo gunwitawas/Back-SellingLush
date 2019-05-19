@@ -236,12 +236,12 @@ router.get("/getOrderDetailByUsername", async (req, res) => {
 
 router.get("/getOrderDetailByStatus", async (req, res) => {
     try {
-        let sql = "SELECT  o.order_id,o.username,o.order_date,o.status,o.pay_by,TO_BASE64(o.pay_img) as pay_img,a.name  FROM order_detail o inner join account a on o.username=a.username WHERE 1=1 ";
+        let sql = "SELECT  o.order_id,o.net_pay,o.username,o.order_date,o.status,o.pay_by,TO_BASE64(o.pay_img) as pay_img,a.name  FROM order_detail o inner join account a on o.username=a.username WHERE 1=1 ";
         if (req.query.status) {
             sql += "and status = ':status' "
                 .replace(":status", req.query.status)
         }
-        sql += " order by order_date desc ";
+        sql += " order by order_id desc ";
         let result = await pool.query(sql);
         let resResult = [];
         for (let m of result) {
