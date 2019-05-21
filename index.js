@@ -6,6 +6,7 @@ import account from './controller/accountController.js';
 import productStore from './controller/productstoreController.js';
 import preorder from "./controller/preorderController";
 import order from "./controller/orderController";
+import report from "./controller/reportController";
 const app = express();
 app.use(bodyParser({
     limit: '50mb'
@@ -45,6 +46,7 @@ app.use('/account', account);
 app.use('/productStore', productStore);
 app.use('/preorder', preorder);
 app.use('/order', order);
+app.use('/report', report);
 app.listen(3000, () => {
     console.log('Start server at port 3000.')
 });

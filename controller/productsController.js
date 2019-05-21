@@ -5,6 +5,15 @@ import pool from "../constance/dbpool";
 const router = express.Router();
 const con = connection.con;
 
+
+router.get("/getCurrentProductId", async (req, res) => {
+    let sql = "select * from product where 1=1 and p_size = ':p_size' order by p_id desc".replace(":p_size", req.query.p_size);
+    console.log(sql);
+    let result  = await pool.query(sql);
+
+    res.send(result);
+});
+
 router.post("/insertProduct", function (req, res) {
     let sql = "INSERT INTO product (p_id, p_name, p_size, price, mixer, p_img,create_date,limited_flag,expire_date) VALUES (':p_id', ':p_name', ':p_size', :price, ':mixer', FROM_BASE64(':p_img'),now(),':limitedFlag', STR_TO_DATE(':expireDate', '%Y-%m-%d'))";
     let limitedFlag = req.body.limitedFlag ? "Y" : "N";
