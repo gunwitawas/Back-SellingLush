@@ -97,7 +97,7 @@ router.post("/insertOrderDetail", async (req, res) => {
         "select ifnull(LPAD(CAST(max(order_id) + 1 AS SIGNED), 11, '0'),\n" +
         "              LPAD('1', 11, '0')) as order_id,\n" +
         "       ':username'                  as username,\n" +
-        "       STR_TO_DATE(':currentDate', '%Y-%m-%d')              as order_date,\n" +
+        "       now()                        as order_date,\n" +
         "       'N'                        as status,\n" +
         "       ''                         as pay_by,\n" +
         "       null                       as pay_img,\n" +
