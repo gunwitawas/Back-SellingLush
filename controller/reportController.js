@@ -31,9 +31,9 @@ router.get("/getStockReport", async (req, res) => {
         sql += " and p.mixer=':mixer' ".replace(":mixer", req.query.mixer);
     }
     if(req.query.type=='S'){
-        sql += " order by sale_date, stockQty desc ,p.p_size ";
+        sql += " order by sale_date desc, stockQty desc ,p.p_size ";
     }else{
-        sql += " order by sale_date, saleQty desc ,p.p_size ";
+        sql += " order by sale_date desc, saleQty desc ,p.p_size ";
     }
     let result = await pool.query(sql);
     res.send(result);
