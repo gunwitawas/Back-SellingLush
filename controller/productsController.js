@@ -203,13 +203,14 @@ router.get("/getLatestProduct", function (req, res) {
 });
 router.get("/getBestSellerProduct", function (req, res) {
     try {
-        let str = "select p.p_id,p.p_name,p.p_size,p.price,p.mixer,TO_BASE64(p.p_img) as p_img \n" +
-            " from product p\n" +
-            "         inner join (\n" +
-            "    select sum(qty) as total, p_id\n" +
-            "    from order_list\n" +
-            "    group by p_id) t on p.p_id = t.p_id\n" +
-            " order by t.total desc limit 3 ";
+        let str = "select p.p_id,p.p_name,p.p_size,p.price,p.mixer,TO_BASE64(p.p_img) as p_img\n" +
+            "             from product p\n" +
+            "                     inner join(\n" +
+            "                select sum(qty) as total, p_id\n" +
+            "                from order_list a\n" +
+            "                left join order_detail b on a.order_id = b.order_id and DATE_FORMAT(b.order_date, '%m-%d') = DATE_FORMAT(now(), '%m-%d')\n" +
+            "                group by p_id) t on p.p_id = t.p_id\n" +
+            "             order by t.total desc limit 3";
 
         con.query(str, function (err, result) {
             if (err) {
